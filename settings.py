@@ -14,8 +14,8 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'passmanager',                      # Or path to database file if using sqlite3.
+        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'passmanager.sqlite',                      # Or path to database file if using sqlite3.
         'USER': 'passmanager',                      # Not used with sqlite3.
         'PASSWORD': 'passmanager',                  # Not used with sqlite3.
         'HOST': 'localhost',                      # Set to empty string for localhost. Not used with sqlite3.
@@ -127,6 +127,16 @@ INSTALLED_APPS = (
     # APLICACIONES
     'passManager',
 )
+
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = '127.0.0.1'
+EMAIL_PORT = 25
+
+PASS_MANAGER_EMAIL_FROM="noreply@example.com"
+PASS_MANAGER_EMAIL_SUBJECT="Credentials"
+PASS_MANAGER_EMAIL_TITLE="Credentials"
 
 INTERNAL_IPS = (
                 '127.0.0.1',
