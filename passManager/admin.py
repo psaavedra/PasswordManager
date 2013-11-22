@@ -60,7 +60,9 @@ class passManagerAdmin(admin.ModelAdmin):
     actions = ['export_as_json']    
     actions_on_bottom = True
     actions_on_top = False
+    list_display_links = ['name']
     list_display = ('name','login','getClickMe','server','uploader','date','notes','send_email_html')
+    list_editable = ('login','server')
     list_filter = (loginsFilter,'uploader','date')
     fieldsets = [
                  (None,         {'fields': ['name',('login','password'),'server','notes']}),
