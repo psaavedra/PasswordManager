@@ -59,7 +59,7 @@ class passManagerAdmin(admin.ModelAdmin):
     ordering = ['modification_date']
 
     list_per_page = 40
-    actions = ['export_as_json']
+    actions = ['export_as_json',"export_as_csv"]
     actions_on_bottom = True
     actions_on_top = True
     list_display_links = ['name']
@@ -124,6 +124,26 @@ class passManagerAdmin(admin.ModelAdmin):
         response = HttpResponse(mimetype="text/javascript")
         serializers.serialize("json", queryset, stream=response)
         return response
+
+    def export_as_csv(self, request, queryset):
+        from django.http import HttpResponse
+        from utils import helpers
+        import csv
+
+        # Create the HttpResponse object with the appropriate CSV header.
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="credentials.csv"'
+
+        writer = csv.writer(response)
+        headers = helpers.get_model_field_names(passDb)
+        headers.append("unencrypted_password")
+        writer.writerow(headers)
+        for o in queryset:
+            values = helpers.get_model_fields_values(o)
+            values.append(o._get_password())
+            writer.writerow(values)
+        return response
+
 
         
 admin.site.register(passDb, passManagerAdmin)

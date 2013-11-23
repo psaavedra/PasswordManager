@@ -1,0 +1,95 @@
+#!/usr/bin/python
+# -*- coding:utf-8 -*-
+
+# Author: Pablo Saavedra Rodinho
+# Contact: pablo.saavedra@interoud.com
+
+"""
+Import credentials from a CSV formatted file
+"""
+import os
+import sys
+from optparse import OptionParser
+import ConfigParser
+
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+from django.core.management import setup_environ
+import imp
+
+try:
+    imp.find_module('settings') # Assumed to be in the same directory.
+except ImportError:
+    import sys
+    sys.stderr.write('''Error: Can't find the file 'settings.py' in the
+    directory containing %r. It appears you've customized things.\n
+    You'll have to run django-admin.py, passing it your settings
+    module.\n''' % __file__)
+    sys.exit(1)
+
+import settings
+
+# execute_manager(settings)
+setup_environ(settings)
+
+from passManager.utils.helpers import *
+from passManager.models import passDb, passEncr
+from django.contrib.auth.models import User
+
+def extra_passDb(model,modelobj,row,headers):
+    if not modelobj:
+        try:
+            index_name = headers.index("name")
+            found_objects = model.objects.filter(name=row[index_name])
+            if len(found_objects) == 1:
+                modelobj = found_objects[0]
+            else:
+                modelobj = model()
+        except Exception:
+            modelobj = model()
+    try:
+        index_unencrypted_password = headers.index("unencrypted_password")
+        old_value = modelobj.password
+        modelobj.password = passEncr('encrypt',
+                 row[index_unencrypted_password])
+        try:
+            modelobj.save()
+        except Exception:
+            modelobj.password=old_value
+    except Exception:
+        pass
+    try:
+        index_uploader = headers.index("uploader")
+        old_value = modelobj.uploader
+        modelobj.uploader = \
+                User.objects.get(username=row[index_uploader])
+        try:
+            modelobj.save()
+        except Exception:
+            modelobj.uploader=old_value
+    except Exception, e:
+        modelobj.uploader_id = 1
+        # User.objects.filter(username=row[index_uploader])
+    return modelobj
+
+
+
+###############################################################################
+
+### Parameters
+filename="./credentials.csv"
+
+################################################################################
+
+parser = OptionParser()
+
+parser.add_option("-f", "--file", dest="filename", default=filename,
+                help="CSV file", metavar="CSVFILE")
+
+(options, args) = parser.parse_args()
+if options.filename:
+    filename = options.filename
+
+f = file(filename)
+from_csv_to_model(passDb,f,extra_passDb)

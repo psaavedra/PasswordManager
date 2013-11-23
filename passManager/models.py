@@ -41,7 +41,6 @@ class passDb(models.Model):
     
 
     def save(self, *args, **kwargs):
-
         d = datetime.datetime.fromtimestamp(time.time(), pytz.UTC)
         if not self.creation_date:
             self.creation_date = d
