@@ -1,5 +1,6 @@
 import passManager
 import csv
+from django.db import transaction
 
 def get_model_fields(model):
     return model._meta.fields
@@ -48,7 +49,7 @@ def from_model_to_csv(model,q,fileobj):
         csv_row = from_model_to_csv_row(o)
         writer.writerow(csv_row)
 
-
+@transaction.commit_on_success
 def from_csv_to_model(model,fileobj,extrafunc=None):
     '''
             modelobj = extrafunc(model,modelobj,row,headers)
