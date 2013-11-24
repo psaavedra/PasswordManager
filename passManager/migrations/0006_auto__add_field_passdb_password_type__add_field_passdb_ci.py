@@ -8,14 +8,31 @@ import passManager
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        try:
+            d_ = passManager.models.PasswordType.objects.get(name="Default")
+        except Exception:
+            d_ = passManager.models.PasswordType(name="Default")
+            d_.save()
         # Adding field 'passDb.password_type'
         db.add_column(u'passManager_passdb', 'password_type',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=passManager.models.PasswordType.objects.all()[0].id, to=orm['passManager.PasswordType']),
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=d_.id, to=orm['passManager.PasswordType']),
                       keep_default=False)
 
+        try:
+            d_ = passManager.models.ITService.objects.get(name="Default")
+        except Exception:
+            d_ = passManager.models.ITService(name="Default")
+            d_.save()
+        try:
+            d_ = \
+passManager.models.ITConfigurationItem.objects.get(name="Default",service__name="Default")
+        except Exception:
+            d_ = \
+passManager.models.ITConfigurationItem(name="Default",service=d_)
+            d_.save()
         # Adding field 'passDb.ci'
         db.add_column(u'passManager_passdb', 'ci',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=passManager.models.ITConfigurationItem.objects.all()[0].id, to=orm['passManager.ITConfigurationItem']),
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=d_.id, to=orm['passManager.ITConfigurationItem']),
                       keep_default=False)
 
 
