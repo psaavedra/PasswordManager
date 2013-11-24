@@ -114,7 +114,7 @@ class passManagerAdmin(admin.ModelAdmin):
     actions_on_top = True
     list_display_links = ['account']
     list_display = \
-      ('ci','account','version','login','getClickMe','server','uploader','creation_date','modification_date','send_email_html')
+      ('ci','account','version','login','getClickMe','modification_date','send_email_html')
     list_editable = []
     readonly_fields = [
         'creation_date',

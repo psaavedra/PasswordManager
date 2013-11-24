@@ -77,8 +77,9 @@ def from_csv_to_model(model,fileobj,extrafunc=None):
                 if value in ["True", "False"]:
                     value = eval(value)
                 try:
-                    from dateutil.parser import parse
-                    value = parse(value)
+                    if len(value.strip()) > 0:
+                        from dateutil.parser import parse
+                        value = parse(value)
                 except Exception, e:
                     pass
 

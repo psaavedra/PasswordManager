@@ -13,7 +13,7 @@ class ITService(models.Model):
     def __unicode__(self):
         return self.name
 
-    name = models.CharField(max_length=500) # Unique
+    name = models.CharField(max_length=500,unique=True)
     notes = models.TextField(null=True, blank=True, default = "")
 
 class ITConfigurationItem(models.Model):
@@ -42,7 +42,7 @@ class PasswordType(models.Model):
         except Exception:
             return super(PasswordType, self).__unicode__(*args, **kwargs)
 
-    name = models.CharField(max_length=100) #Unique
+    name = models.CharField(max_length=100,unique=True)
     notes = models.TextField(null=True, blank=True, default = "")
 
 class passDb(models.Model):
@@ -78,7 +78,6 @@ class passDb(models.Model):
 
     def getClickMe(self):
         password = passEncr('decrypt', self.password)
-        # TODO: BadSignature
         idrow = self.id
         return '<font color="red"><span id=\"%s\" onClick=\"cambiar(\'%s\',\'%s\');\">ClickME</span></font>' % (idrow, idrow, password)
     getClickMe.allow_tags = True
