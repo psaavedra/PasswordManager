@@ -1,6 +1,7 @@
 from django.contrib import admin
-from passManager.models import passDb, passEncr
+from passManager.models import *
 from django.contrib.admin import SimpleListFilter
+from django import forms
 
 
 class loginsFilter(SimpleListFilter):
@@ -49,6 +50,53 @@ class loginsFilter(SimpleListFilter):
                 return queryset.filter(login=val)
 
 
+class DecryptedPassword(forms.TextInput):
+    input_type = 'text'
+
+    def _format_value(self, value):
+        value = passEncr('decrypt', value)
+        return super(DecryptedPassword, self)._format_value(value)
+
+    def render(self, name, value, attrs=None):
+        return super(DecryptedPassword, self).render(name, value, attrs)
+
+    def __init__(self, attrs=None):
+        super(DecryptedPassword, self).__init__(attrs)
+
+class passManagerAdminForm(forms.ModelForm):
+    class Meta:
+        model = passDb
+        widgets = {
+          'password':DecryptedPassword
+        }
+
+class ITConfigurationItemInLine(admin.TabularInline):
+    model = ITConfigurationItem
+    fk_name = "service"
+    extra = 1
+
+class ITServiceAdmin(admin.ModelAdmin):
+    list_per_page = 40
+    ordering = ['id']
+    inlines = [ITConfigurationItemInLine]
+    list_display = ["id","name","notes"]
+    list_editable = ["name","notes"]
+
+class passManagerItemInLine(admin.TabularInline):
+    model = passDb
+    exclude = ["name"]
+    form = passManagerAdminForm
+    fk_name = "ci"
+    extra = 1
+
+class ITConfigurationItemAdmin(admin.ModelAdmin):
+    list_per_page = 40
+    ordering = ['id']
+    inlines = [passManagerItemInLine]
+    list_display = ["id","name","service","notes"]
+    list_editable = ["name","service","notes"]
+
+
 class passManagerAdmin(admin.ModelAdmin):
     class Media:
         js = ("jquery-1.7.1.min.js", "jquery-ui-1.8.18.custom.min.js", "functions.js",)
@@ -56,30 +104,34 @@ class passManagerAdmin(admin.ModelAdmin):
             "all": ("jquery-ui-1.8.18.custom.css",)
         }
 
-    ordering = ['modification_date']
+    ordering = ['-modification_date']
 
-    list_per_page = 40
-    actions = ['export_as_json',"export_as_csv"]
+    form = passManagerAdminForm
+
+    list_per_page = 120
+    actions = ['export_as_json',"export_as_csv","duplicate"]
     actions_on_bottom = True
     actions_on_top = True
-    list_display_links = ['name']
+    list_display_links = ['account']
     list_display = \
-      ('name','login','getClickMe','server','uploader','creation_date','modification_date','notes','send_email_html')
+      ('ci','account','version','login','getClickMe','server','uploader','creation_date','modification_date','send_email_html')
     list_editable = []
     readonly_fields = [
         'creation_date',
         'modification_date',
         "uploader",
-        "deprecated"
+        "deprecated",
+        "name"
     ]
 
     list_filter = (loginsFilter,'uploader','creation_date',
-            "modification_date","deprecated")
+            "modification_date","deprecated","service_name")
     fieldsets = [
             (None,{
               'fields': [
-                ('name','server'),
-                ('login','password'),
+                ('ci','account','version'),
+                ('login','password', 'server'),
+                ('name','uploader',"deprecated"),
             ]}),
             ('Dates', {
               'classes': ('collapse',),
@@ -94,7 +146,6 @@ class passManagerAdmin(admin.ModelAdmin):
             ('Other info', {
               'classes': ('collapse',),
               'fields': (
-                ('uploader',"deprecated"),
                 ("notes"),
               )
             }),
@@ -117,7 +168,15 @@ class passManagerAdmin(admin.ModelAdmin):
         return buttons
     send_email_html.short_description = ''
     send_email_html.allow_tags = True
-    
+
+    def duplicate(self, request, queryset):
+        from utils import helpers
+        for o in queryset:
+            c = helpers.clone_model(o)
+            c.id = None
+            c.save()
+        self.message_user(request, "Credentials successfully ducplicated.")
+
     def export_as_json(self, request, queryset):
         from django.http import HttpResponse
         from django.core import serializers
@@ -144,6 +203,14 @@ class passManagerAdmin(admin.ModelAdmin):
             writer.writerow(values)
         return response
 
+class PasswordTypeAdmin(admin.ModelAdmin):
+    list_per_page = 40
+    ordering = ['id']
+    list_display = ["id","name","notes"]
+    list_editable = ["name","notes"]
 
-        
+
 admin.site.register(passDb, passManagerAdmin)
+admin.site.register(ITService, ITServiceAdmin)
+admin.site.register(ITConfigurationItem,ITConfigurationItemAdmin)
+admin.site.register(PasswordType,PasswordTypeAdmin)

@@ -18,6 +18,13 @@ def get_model_fields_values(modelobj):
         res.append(f)
     return res
 
+def clone_model(modelobj):
+    new = modelobj.__class__()
+    for field in get_model_fields(modelobj):
+        value = getattr(modelobj, field.name)
+        setattr(new,field.name,value)
+    return new
+
 def from_model_to_csv_header(model):
     row = ''
     for field in get_model_fields(model):
