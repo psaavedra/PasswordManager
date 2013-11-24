@@ -80,7 +80,8 @@ class ITServiceAdmin(admin.ModelAdmin):
     ordering = ['id']
     inlines = [ITConfigurationItemInLine]
     list_display = ["id","name","notes"]
-    list_editable = ["name","notes"]
+    list_editable = ["name"]
+    readonly_fields = []
 
 class passManagerItemInLine(admin.TabularInline):
     model = passDb
@@ -90,11 +91,12 @@ class passManagerItemInLine(admin.TabularInline):
     extra = 1
 
 class ITConfigurationItemAdmin(admin.ModelAdmin):
-    list_per_page = 40
+    list_per_page = 120
     ordering = ['id']
     inlines = [passManagerItemInLine]
     list_display = ["id","name","service","notes"]
-    list_editable = ["name","service","notes"]
+    list_editable = ["name","service"]
+    readonly_fields = []
 
 
 class passManagerAdmin(admin.ModelAdmin):
