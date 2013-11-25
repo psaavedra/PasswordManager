@@ -76,8 +76,8 @@ class ITConfigurationItemInLine(admin.TabularInline):
     extra = 1
 
 class ITServiceAdmin(admin.ModelAdmin):
-    list_per_page = 40
-    ordering = ['id']
+    list_per_page = 120
+    ordering = ['name']
     inlines = [ITConfigurationItemInLine]
     list_display = ["id","name","notes"]
     list_editable = ["name"]
@@ -92,9 +92,9 @@ class passManagerItemInLine(admin.TabularInline):
 
 class ITConfigurationItemAdmin(admin.ModelAdmin):
     list_per_page = 120
-    ordering = ['id']
+    ordering = ['service','name']
     inlines = [passManagerItemInLine]
-    list_display = ["id","name","service","notes"]
+    list_display = ["id","service","name","notes"]
     list_editable = ["name","service"]
     readonly_fields = []
 
@@ -209,7 +209,7 @@ class PasswordTypeAdmin(admin.ModelAdmin):
     list_per_page = 40
     ordering = ['id']
     list_display = ["id","name","notes"]
-    list_editable = ["name","notes"]
+    list_editable = ["name"]
 
 
 admin.site.register(passDb, passManagerAdmin)
