@@ -27,6 +27,8 @@ TODO:
  
 REQUIREMENTS:
  * Django 1.4
+ * South
+ * Dateutil
 
 ###########
 HOWTO
@@ -59,6 +61,9 @@ Superuser created successfully.
 Installing custom SQL ...
 Installing indexes ...
 Installed 0 object(s) from 0 fixture(s)
+
+vmalaga@dbalinux:~/PasswordManager$ ./manage.py migrate passManager
+...
 
 STATICS
 
