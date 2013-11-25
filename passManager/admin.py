@@ -125,12 +125,16 @@ class passManagerAdmin(admin.ModelAdmin):
     form = passManagerAdminForm
 
     list_per_page = 120
-    actions = ['export_as_json',"export_as_csv","duplicate"]
+    actions = [
+            'export_as_json',"export_as_csv",
+            "duplicate",
+            "mark_as_deprecated","mark_as_active"
+            ]
     actions_on_bottom = True
     actions_on_top = True
-    list_display_links = ['account']
+    list_display_links = ['name']
     list_display = \
-      ('ci','account','version','login','getClickMe','modification_date','send_email_html')
+      ('name','version','active','login','server','getClickMe','modification_date','send_email_html')
     list_editable = []
     readonly_fields = [
         'creation_date',
@@ -145,17 +149,16 @@ class passManagerAdmin(admin.ModelAdmin):
     fieldsets = [
             (None,{
               'fields': [
-                ('ci','account','version'),
+                ('account','version','ci','password_type'),
                 ('login','password', 'server'),
                 ('name','uploader',"deprecated"),
             ]}),
             ('Dates', {
-              'classes': ('collapse',),
+              'classes': (),
               'fields': (
                 (
                 "creation_date",
-                "modification_date"),
-                ("valid_since_date",
+                "modification_date",
                 "valid_until_date"),
               )
             }),
@@ -185,13 +188,26 @@ class passManagerAdmin(admin.ModelAdmin):
     send_email_html.short_description = ''
     send_email_html.allow_tags = True
 
+    def mark_as_active(self, request, queryset):
+        for o in queryset:
+            o.valid_until_date = None
+            o.save()
+        self.message_user(request, "Credentials activated.")
+
+    def mark_as_deprecated(self, request, queryset):
+        for o in queryset:
+            d = datetime.datetime.fromtimestamp(time.time() - 1 , pytz.UTC)
+            o.valid_until_date = d
+            o.save()
+        self.message_user(request, "Credentials deprecated.")
+
     def duplicate(self, request, queryset):
         from utils import helpers
         for o in queryset:
             c = helpers.clone_model(o)
             c.id = None
             c.save()
-        self.message_user(request, "Credentials successfully ducplicated.")
+        self.message_user(request, "Credentials successfully duplicated.")
 
     def export_as_json(self, request, queryset):
         from django.http import HttpResponse
@@ -222,8 +238,14 @@ class passManagerAdmin(admin.ModelAdmin):
 class PasswordTypeAdmin(admin.ModelAdmin):
     list_per_page = 40
     ordering = ['id']
-    list_display = ["id","name","notes"]
+    list_display_links = ['edit_html']
+    list_display = ["name","notes","edit_html"]
     list_editable = ["name"]
+
+    def edit_html(self, queryset):
+        return '''<a href="%s/">Edit</a>''' % queryset.id
+    edit_html.short_description = ''
+    edit_html.allow_tags = True
 
 
 admin.site.register(passDb, passManagerAdmin)

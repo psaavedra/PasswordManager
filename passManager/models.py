@@ -50,6 +50,7 @@ class passDb(models.Model):
         verbose_name = 'Password'
 
     deprecated = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
     account = models.CharField(max_length=100)
     name = models.CharField(max_length=500)
     version = models.IntegerField(default=1)
@@ -57,14 +58,14 @@ class passDb(models.Model):
     ci = models.ForeignKey(ITConfigurationItem)
     login = models.CharField(max_length=50)
     password = models.CharField(max_length=100)
-    server = models.CharField(max_length=60)
+    server = models.CharField(max_length=60,null=True, blank=True, default= "")
     service_name = models.CharField(max_length=500)
     uploader = models.ForeignKey(User)
     notes = models.TextField(null=True, blank=True, default = "")
     creation_date = models.DateTimeField(editable=False)
     modification_date = models.DateTimeField(auto_now=True, null=True,
             blank=True)
-    valid_since_date = models.DateTimeField(null=True, blank=True, default = None)
+    # valid_since_date = models.DateTimeField(null=True, blank=True, default = None)
     valid_until_date = models.DateTimeField(null=True, blank=True, default = None)
 
     def __unicode__(self):
@@ -74,7 +75,6 @@ class passDb(models.Model):
             ci_str = "no CI"
         return ci_str + \
                 "::" + self.account + "::" + str(self.version)
-
 
     def getClickMe(self):
         password = passEncr('decrypt', self.password)
@@ -117,5 +117,10 @@ class passDb(models.Model):
             self.creation_date = d
         if self.valid_until_date and self.valid_until_date < d:
             self.deprecated = True
+        else:
+            self.deprecated = False
+
+        self.active = not self.deprecated
+
         super(passDb, self).save(*args, **kwargs)
 
