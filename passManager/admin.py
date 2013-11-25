@@ -79,9 +79,17 @@ class ITServiceAdmin(admin.ModelAdmin):
     list_per_page = 120
     ordering = ['name']
     inlines = [ITConfigurationItemInLine]
-    list_display = ["id","name","notes"]
+    list_display_links = ['edit_html']
+    list_display = ["name","notes","edit_html"]
     list_editable = ["name"]
     readonly_fields = []
+
+    def edit_html(self, queryset):
+        return '''<a href="%s/">Edit</a>''' % queryset.id
+    edit_html.short_description = ''
+    edit_html.allow_tags = True
+
+
 
 class passManagerItemInLine(admin.TabularInline):
     model = passDb
@@ -94,9 +102,15 @@ class ITConfigurationItemAdmin(admin.ModelAdmin):
     list_per_page = 120
     ordering = ['service','name']
     inlines = [passManagerItemInLine]
-    list_display = ["id","service","name","notes"]
+    list_display_links = ['edit_html']
+    list_display = ["service","name","notes","edit_html"]
     list_editable = ["name","service"]
     readonly_fields = []
+
+    def edit_html(self, queryset):
+        return '''<a href="%s/">Edit</a>''' % queryset.id
+    edit_html.short_description = ''
+    edit_html.allow_tags = True
 
 
 class passManagerAdmin(admin.ModelAdmin):
