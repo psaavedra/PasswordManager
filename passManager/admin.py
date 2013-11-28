@@ -120,7 +120,7 @@ class passManagerAdmin(admin.ModelAdmin):
             "all": ("jquery-ui-1.8.18.custom.css",)
         }
 
-    ordering = ['-modification_date']
+    ordering = ['name']
 
     form = passManagerAdminForm
 
@@ -134,8 +134,10 @@ class passManagerAdmin(admin.ModelAdmin):
     actions_on_top = True
     list_display_links = ['name']
     list_display = \
-      ('name','version','active','login','server','getClickMe','modification_date','send_email_html')
-    list_editable = []
+      ('name','version','login','server','getClickMe','notes','send_email_html')
+    list_editable = \
+      ('version','login','server')
+
     readonly_fields = [
         'creation_date',
         'modification_date',
@@ -144,8 +146,11 @@ class passManagerAdmin(admin.ModelAdmin):
         "name"
     ]
 
-    list_filter = (loginsFilter,'uploader','creation_date',
-            "modification_date","deprecated","service_name")
+    list_filter = ('deprecated', 'service_name',loginsFilter,'creation_date',
+           "modification_date",'uploader')
+
+    date_hierarchy = 'modification_date'
+
     fieldsets = [
             (None,{
               'fields': [
@@ -163,7 +168,7 @@ class passManagerAdmin(admin.ModelAdmin):
               )
             }),
             ('Other info', {
-              'classes': ('collapse',),
+              'classes': (),
               'fields': (
                 ("notes"),
               )
@@ -177,7 +182,12 @@ class passManagerAdmin(admin.ModelAdmin):
         obj.uploader = request.user
         obj.nivel = 1
         obj.save()
-    
+
+    def edit_html(self, queryset):
+        return '''<a href="%s/">Edit</a>''' % queryset.id
+    edit_html.short_description = ''
+    edit_html.allow_tags = True
+
     def send_email_html(self, queryset):
         buttons = """                                                                                                                                                            
             <div style="width:20px">                                                                                                                                             
