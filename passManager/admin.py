@@ -127,7 +127,7 @@ class passManagerAdmin(admin.ModelAdmin):
     list_per_page = 120
     actions = [
             'export_as_json',"export_as_csv",
-            "duplicate",
+            "duplicate","new_version",
             "mark_as_deprecated","mark_as_active"
             ]
     actions_on_bottom = True
@@ -218,6 +218,18 @@ class passManagerAdmin(admin.ModelAdmin):
             c.id = None
             c.save()
         self.message_user(request, "Credentials successfully duplicated.")
+
+    def new_version(self, request, queryset):
+        from utils import helpers
+        for o in queryset:
+            c = helpers.clone_model(o)
+            c.id = None
+            c.version = c.version + 1
+            c.save()
+            d = datetime.datetime.fromtimestamp(time.time() - 1 , pytz.UTC)
+            o.valid_until_date = d
+            o.save()
+        self.message_user(request, "New credentials version.")
 
     def export_as_json(self, request, queryset):
         from django.http import HttpResponse
